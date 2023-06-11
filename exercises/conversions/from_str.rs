@@ -15,6 +15,14 @@ struct Person {
     age: usize,
 }
 
+impl Default for Person {
+    fn default() -> Person {
+        Person {
+            name: String::from("John"),
+            age: 30,
+        }
+    }
+}
 // We will use this error type for the `FromStr` implementation.
 #[derive(Debug, PartialEq)]
 enum ParsePersonError {
@@ -27,8 +35,6 @@ enum ParsePersonError {
     // Wrapped error from parse::<usize>()
     ParseInt(ParseIntError),
 }
-
-// I AM NOT DONE
 
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
@@ -46,6 +52,29 @@ enum ParsePersonError {
 impl FromStr for Person {
     type Err = ParsePersonError;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        if s.len() == 0 {
+            return Err(ParsePersonError::Empty);
+        }
+        let vecS: Vec<&str> = s.split(',').collect();
+        if vecS.len() != 2 {
+            return Err(ParsePersonError::BadLen);
+        }
+
+        if vecS[0].len() == 0 {
+            return Err(ParsePersonError::NoName);
+        }
+
+        let name = vecS[0];
+
+        let age = match vecS[1].parse::<usize>() {
+            Ok(age) => age,
+            Err(e) => return Err(ParsePersonError::ParseInt(e)),
+        };
+
+        Ok(Person {
+            name: name.to_string(),
+            age: age,
+        })
     }
 }
 
